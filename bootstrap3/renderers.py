@@ -38,6 +38,7 @@ class BaseRenderer(object):
             'form_group_class', FORM_GROUP_CLASS)
         self.field_class = kwargs.get('field_class', '')
         self.label_class = kwargs.get('label_class', '')
+        self.label_wrapper= kwargs.get('label_wrapper', '')
         self.show_help = kwargs.get('show_help', True)
         self.show_label = kwargs.get('show_label', True)
         self.exclude = kwargs.get('exclude', '')
@@ -446,6 +447,11 @@ class FieldRenderer(BaseRenderer):
             label_class = add_css_class(label_class, 'sr-only')
         return add_css_class(label_class, 'control-label')
 
+    def get_label_wrapper_class(self):
+        wrapper_class = self.label_wrapper
+        if not wrapper_class : return False
+        else: return wrapper_class
+
     def get_label(self):
         if isinstance(self.widget, CheckboxInput):
             label = None
@@ -458,11 +464,21 @@ class FieldRenderer(BaseRenderer):
     def add_label(self, html):
         label = self.get_label()
         if label:
-            html = render_label(
+            html = self.wrap_label(
+                render_label(
                 label,
                 label_for=self.field.id_for_label,
-                label_class=self.get_label_class()) + html
+                label_class=self.get_label_class())
+                ) + html
         return html
+
+    def wrap_label(self, htmlLabel):
+        wrapper_class = self.get_label_wrapper_class()
+        if wrapper_class:
+            return '<div class="{klass}">{htmlLabel}</div>'.format(
+                klass=wrapper_class, htmlLabel=htmlLabel)
+        else:
+            return htmlLabel
 
     def get_form_group_class(self):
         form_group_class = self.form_group_class
