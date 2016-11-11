@@ -1,0 +1,4 @@
+{# Reverse the messages, so that errors are printed first #}
+{% for text in errors %}
+    <div class="error-block">{{ text }}</div>
+{% endfor %}

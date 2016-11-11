@@ -230,7 +230,7 @@ class FieldRenderer(BaseRenderer):
         self.widget = field.field.widget
         self.is_multi_widget = isinstance(field.field.widget, MultiWidget)
         self.initial_attrs = self.widget.attrs.copy()
-        self.field_help = text_value(mark_safe(field.help_text)) if self.show_help and field.help_text else ''
+        self.field_help = text_value(mark_safe(field.help_text)) if field.help_text else ''
         self.field_errors = [conditional_escape(text_value(error)) for error in field.errors]
 
         if 'placeholder' in kwargs:
@@ -408,21 +408,33 @@ class FieldRenderer(BaseRenderer):
         return html
 
     def append_to_field(self, html):
-        help_text_and_errors = []
-        if self.field_help:
-            help_text_and_errors.append(self.field_help)
-        help_text_and_errors += self.field_errors
-        if help_text_and_errors:
+        help_text = []
+        errors = []
+        if self.show_help :
+            help_text.append(self.field_help)
+        errors += self.field_errors
+        if help_text:
             help_html = render_template_file(
-                'bootstrap3/field_help_text_and_errors.html',
+                'bootstrap3/field_help_text.html',
                 context={
                     'field': self.field,
-                    'help_text_and_errors': help_text_and_errors,
+                    'help_text': help_text,
                     'layout': self.layout,
                     'show_help': self.show_help,
                 }
             )
             html += '<span class="help-block">{help}</span>'.format(help=help_html)
+        if errors:
+            errors_html = render_template_file(
+                'bootstrap3/field_errors_text.html',
+                context={
+                    'field': self.field,
+                    'errors': errors,
+                    'layout': self.layout,
+                    'show_help': self.show_help,
+                }
+            )
+            html += '<span class="help-block">{errors}</span>'.format(errors=errors_html)
         return html
 
     def get_field_class(self):
